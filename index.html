@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>无尽群岛 —— 程序化群岛帆船航海与海战模拟器</title>
+  <link rel="stylesheet" href="style.css" />
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.160.0/build/three.module.js"
+    }
+  }
+  </script>
+</head>
+<body>
+  <!-- 3D 渲染画布由 main.js 挂载 -->
+  <div id="app"></div>
+
+  <!-- ===================== 游戏 HUD ===================== -->
+  <div id="hud" class="hidden">
+    <!-- 左上：调试 / 状态信息 -->
+    <div id="stats-panel" class="panel"></div>
+
+    <!-- 顶部中央：罗盘 -->
+    <canvas id="compass" width="320" height="48"></canvas>
+
+    <!-- 望远镜圆形遮罩 -->
+    <div id="spyglass-overlay" class="hidden"></div>
+
+    <!-- 右上：小地图 -->
+    <canvas id="minimap" width="210" height="210"></canvas>
+
+    <!-- 左下：船舶状态 -->
+    <div id="ship-panel" class="panel">
+      <div class="hud-row"><span>航速</span><b id="hud-speed">0.0 节</b></div>
+      <div class="hud-row"><span>水深</span><b id="hud-depth">-- m</b></div>
+      <div class="hud-row"><span>耐久</span>
+        <div class="bar"><div id="bar-hp" class="bar-fill hp"></div></div>
+      </div>
+      <div class="hud-row"><span>帆效率</span>
+        <div class="bar wide"><div id="bar-sail" class="bar-fill sail"></div><b id="hud-sail-pct">0%</b></div>
+      </div>
+      <div class="hud-row cannons">
+        <span>左舷炮</span><div id="gun-port" class="gun-ready"></div>
+        <span>右舷炮</span><div id="gun-star" class="gun-ready"></div>
+      </div>
+      <div id="hud-hint" class="hud-hint"></div>
+    </div>
+  </div>
+
+  <!-- ===================== 调试面板 F3 ===================== -->
+  <div id="debug-panel" class="panel hidden"></div>
+
+  <!-- ===================== 开始界面 ===================== -->
+  <div id="start-screen">
+    <div class="menu-card">
+      <h1>无尽群岛</h1>
+      <h2>Endless Archipelago · Sailing &amp; Naval Combat Sandbox</h2>
+      <div class="brief">
+        <p>驾驶你的帆船，利用 <b>风向</b> 在程序化群岛中航行、测绘岛屿、规避浅滩与暴风雨，
+           并与海盗船展开两舷炮战。</p>
+        <ul>
+          <li><b>W / S</b> 升帆 / 降帆　<b>A / D</b> 左舵 / 右舵</li>
+          <li><b>Q / E</b> 微调帆向（让帆面尽量垂直迎风）</li>
+          <li><b>空格</b> 抛锚 / 起锚　<b>V</b> 切换第一人称　<b>Z 按住</b> 望远镜</li>
+          <li><b>鼠标左键</b> 左舷齐射　<b>鼠标右键</b> 右舷齐射</li>
+          <li><b>鼠标移动</b> 环绕视角　<b>滚轮</b> 缩放　<b>F3</b> 调试面板</li>
+          <li><b>ESC</b> 暂停菜单（可保存世界、调整视距 / 灵敏度 / 画质）</li>
+        </ul>
+        <p class="goal">目标：击沉所有海盗船（小地图红点）。顺风满帆、顶风停船——读懂风，才能读懂大海。</p>
+      </div>
+      <div class="menu-buttons">
+        <button id="btn-new" class="primary">新的航程（新种子）</button>
+        <button id="btn-continue">继续上次航程</button>
+      </div>
+      <p id="save-info" class="save-info"></p>
+    </div>
+  </div>
+
+  <!-- ===================== 暂停菜单 ===================== -->
+  <div id="pause-screen" class="hidden">
+    <div class="menu-card">
+      <h1>暂停</h1>
+      <div class="settings">
+        <label>视距
+          <select id="set-view">
+            <option value="2">近</option>
+            <option value="3">中</option>
+            <option value="4">远</option>
+            <option value="5">极远</option>
+          </select>
+        </label>
+        <label>鼠标灵敏度
+          <input id="set-sens" type="range" min="0.3" max="2.5" step="0.1" />
+        </label>
+        <label>画质档位
+          <select id="set-quality">
+            <option value="low">低（集显）</option>
+            <option value="medium">中</option>
+            <option value="high">高</option>
+          </select>
+        </label>
+        <p class="save-info">画质影响波浪幅度、植被密度与阴影，切换即时生效。</p>
+      </div>
+      <div class="menu-buttons col">
+        <button id="btn-resume" class="primary">继续游戏</button>
+        <button id="btn-save">立即保存</button>
+        <button id="btn-reset-keep">重置世界（保留种子）</button>
+        <button id="btn-reset-new">重置世界（换新种子）</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 移动端提示 -->
+  <div id="mobile-warning" class="hidden">
+    <div>
+      <h2>建议使用桌面浏览器</h2>
+      <p>本游戏需要键盘与鼠标操作，请在桌面端 Chrome / Edge / Firefox 中访问。</p>
+    </div>
+  </div>
+
+  <!-- 浮动提示 -->
+  <div id="toast" class="hidden"></div>
+
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>

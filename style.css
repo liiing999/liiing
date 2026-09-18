@@ -1,0 +1,255 @@
+/* ============================================================
+   无尽群岛 —— 全局样式（像素 / 卡通航海 UI）
+   ============================================================ */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #0b1d2c;
+  font-family: "Trebuchet MS", "Microsoft YaHei", "PingFang SC", sans-serif;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+#app, #app canvas { position: absolute; inset: 0; display: block; }
+
+.hidden { display: none !important; }
+
+/* ---------------- 通用面板 ---------------- */
+.panel {
+  position: absolute;
+  color: #eaf6ff;
+  background: rgba(10, 28, 44, 0.62);
+  border: 2px solid rgba(122, 197, 255, 0.35);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 13px;
+  line-height: 1.55;
+  text-shadow: 0 1px 2px #000;
+  backdrop-filter: blur(2px);
+  pointer-events: none;
+  white-space: pre;
+}
+
+/* ---------------- 左上状态 ---------------- */
+#stats-panel { top: 12px; left: 12px; min-width: 230px; }
+
+/* ---------------- 罗盘 ---------------- */
+#compass {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  image-rendering: pixelated;
+}
+
+/* ---------------- 小地图 ---------------- */
+#minimap {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 210px;
+  height: 210px;
+  border: 2px solid rgba(122, 197, 255, 0.45);
+  border-radius: 10px;
+  background: rgba(8, 26, 42, 0.7);
+  image-rendering: pixelated;
+}
+
+/* ---------------- 船舶状态 ---------------- */
+#ship-panel {
+  left: 12px;
+  bottom: 14px;
+  min-width: 264px;
+}
+
+.hud-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 3px 0;
+}
+.hud-row > span { width: 48px; opacity: 0.85; }
+.hud-row > b { font-weight: 600; min-width: 64px; }
+
+.bar {
+  position: relative;
+  flex: 1;
+  height: 12px;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.bar.wide { display: flex; align-items: center; }
+.bar-fill { height: 100%; width: 0%; transition: width 0.12s linear; }
+.bar-fill.hp { background: linear-gradient(90deg, #ff5d5d, #ffb347); }
+.bar-fill.sail { background: linear-gradient(90deg, #2e8fff, #7ee0ff); }
+#hud-sail-pct {
+  position: absolute;
+  right: 6px;
+  font-size: 11px;
+  line-height: 12px;
+  color: #fff;
+  text-shadow: 0 1px 1px #000;
+}
+
+.cannons { gap: 6px; }
+.cannons .gun-ready, .cannons .gun-cool {
+  width: 46px;
+  height: 12px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+.gun-ready { background: radial-gradient(#ffe08a, #d98b1f); box-shadow: 0 0 6px #ffc24d; }
+.gun-cool { background: rgba(80, 80, 80, 0.8); }
+
+.hud-hint { margin-top: 4px; font-size: 12px; color: #ffd98a; min-height: 16px; }
+
+/* ---------------- 调试面板 ---------------- */
+#debug-panel {
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  max-height: 80vh;
+  overflow: hidden;
+}
+
+/* ---------------- 望远镜遮罩 ---------------- */
+#spyglass-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at center,
+    rgba(0,0,0,0) 0%,
+    rgba(0,0,0,0) 30%,
+    rgba(5, 10, 8, 0.55) 42%,
+    #020504 58%);
+}
+
+/* ---------------- 菜单界面 ---------------- */
+#start-screen, #pause-screen, #mobile-warning {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at 50% 30%, rgba(20,60,90,0.75), rgba(6,16,28,0.92));
+}
+
+.menu-card {
+  width: min(680px, 92vw);
+  max-height: 92vh;
+  overflow-y: auto;
+  background: linear-gradient(180deg, rgba(18, 48, 72, 0.96), rgba(10, 28, 46, 0.96));
+  border: 3px solid rgba(126, 206, 255, 0.5);
+  border-radius: 14px;
+  padding: 28px 34px;
+  color: #eaf6ff;
+  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.55);
+}
+
+.menu-card h1 {
+  font-size: 40px;
+  letter-spacing: 10px;
+  text-align: center;
+  color: #ffe6a8;
+  text-shadow: 0 3px 0 #7a4a12, 0 0 24px rgba(255, 214, 120, 0.35);
+}
+.menu-card h2 {
+  text-align: center;
+  font-size: 13px;
+  font-weight: 400;
+ letter-spacing: 2px;
+  color: #9fd4ff;
+  margin: 6px 0 18px;
+}
+
+.brief p { margin: 8px 0; font-size: 14px; line-height: 1.7; }
+.brief ul { list-style: none; margin: 12px 0; }
+.brief li {
+  font-size: 13px;
+  line-height: 2;
+  padding-left: 18px;
+  position: relative;
+}
+.brief li::before {
+  content: "⚓";
+  position: absolute;
+  left: 0;
+  font-size: 11px;
+}
+.goal { color: #ffd98a; }
+
+.menu-buttons {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  margin-top: 18px;
+  flex-wrap: wrap;
+}
+.menu-buttons.col { flex-direction: column; align-items: stretch; }
+
+.menu-buttons button {
+  cursor: pointer;
+  font-size: 15px;
+  padding: 11px 22px;
+  color: #eaf6ff;
+  background: linear-gradient(180deg, #2b6da6, #1d4e7c);
+  border: 2px solid rgba(150, 210, 255, 0.5);
+  border-radius: 8px;
+  transition: transform 0.08s, filter 0.12s;
+}
+.menu-buttons button:hover { filter: brightness(1.2); transform: translateY(-1px); }
+.menu-buttons button.primary {
+  background: linear-gradient(180deg, #e0a13c, #b36f16);
+  border-color: rgba(255, 230, 170, 0.7);
+}
+
+.save-info {
+  text-align: center;
+  font-size: 12px;
+  color: #9fc3dd;
+  margin-top: 12px;
+}
+
+.settings label {
+  display: block;
+  margin: 14px 0;
+  font-size: 14px;
+}
+.settings select, .settings input {
+  float: right;
+  width: 220px;
+}
+.settings select {
+  background: #12324a;
+  color: #eaf6ff;
+  border: 1px solid #5d97c0;
+  border-radius: 5px;
+  padding: 3px 6px;
+}
+
+/* ---------------- Toast ---------------- */
+#toast {
+  position: absolute;
+  bottom: 42px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 30;
+  padding: 10px 22px;
+  background: rgba(8, 24, 40, 0.85);
+  border: 2px solid rgba(255, 214, 120, 0.6);
+  border-radius: 10px;
+  color: #ffe6a8;
+  font-size: 15px;
+  pointer-events: none;
+}
+
+/* ---------------- 移动端 ---------------- */
+#mobile-warning { z-index: 50; background: #0b1d2c; text-align: center; padding: 24px; }
+#mobile-warning h2 { color: #ffd98a; margin-bottom: 14px; }
+#mobile-warning p { color: #cfe8ff; }
