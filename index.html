@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>无尽群岛 —— 程序化群岛帆船航海与海战模拟器</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%23123e5c'/%3E%3Cpath d='M8 2v9M4 7l4-4 4 4z' fill='%23fff'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="style.css" />
+  <!-- Three.js 固定版本 r160，通过 importmap 引入 -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.160.0/build/three.module.js"
+    }
+  }
+  </script>
+</head>
+<body>
+  <!-- 3D 渲染画布 -->
+  <canvas id="game-canvas"></canvas>
+
+  <!-- 抬头显示层（罗盘、帆效率、航速、水深、耐久、装填等） -->
+  <div id="hud" class="hidden">
+    <canvas id="compass" width="420" height="70"></canvas>
+    <div id="sail-panel">
+      <div class="hud-label">帆效率</div>
+      <div class="bar"><div id="sail-bar"></div><span id="sail-text"></span></div>
+      <div class="hud-label small">帆位 <span id="sail-amount-text"></span></div>
+      <div class="bar thin"><div id="sail-amount-bar"></div></div>
+    </div>
+    <div id="stats-panel">
+      <div class="hud-label small">航速</div><div id="speed-text" class="hud-value">0.0 节</div>
+      <div class="hud-label small">水深</div><div id="depth-text" class="hud-value">-- m</div>
+      <div class="hud-label small">耐久</div>
+      <div class="bar hp"><div id="hp-bar"></div><span id="hp-text"></span></div>
+      <div class="hud-label small">左舷炮</div><div class="bar thin cannon"><div id="reload-port"></div></div>
+      <div class="hud-label small">右舷炮</div><div class="bar thin cannon"><div id="reload-star"></div></div>
+    </div>
+    <canvas id="minimap" width="220" height="220"></canvas>
+    <!-- 望远镜圆形遮罩 -->
+    <div id="spyglass-mask"><div class="spyglass-inner"></div></div>
+    <!-- 临时提示文字（击沉、发现等） -->
+    <div id="toast-layer"></div>
+  </div>
+
+  <!-- 左上角调试 / 状态信息 -->
+  <div id="info-panel" class="hidden">
+    <div id="info-stats"></div>
+    <div id="ai-panel" class="hidden">
+      <div class="info-title">AI 敌船状态 (F3)</div>
+      <div id="ai-stats"></div>
+    </div>
+  </div>
+
+  <!-- 开始界面 -->
+  <div id="start-screen">
+    <div class="menu-box">
+      <h1>无尽群岛</h1>
+      <p class="subtitle">程序化群岛帆船航海与海战模拟器</p>
+      <div class="controls-help">
+        <div><b>W / S</b> 升帆 / 降帆　　<b>A / D</b> 左舵 / 右舵</div>
+        <div><b>Q / E</b> 微调帆桁方向　　<b>空格</b> 抛锚 / 起锚</div>
+        <div><b>鼠标左键</b> 左舷齐射　　<b>鼠标右键</b> 右舷齐射</div>
+        <div><b>移动鼠标</b> 环绕视角　　<b>滚轮</b> 缩放　　<b>V</b> 第一人称</div>
+        <div><b>Z（按住）</b> 望远镜　　<b>F3</b> 调试面板　　<b>[ ]</b> 天气　<b>- =</b> 时间</div>
+        <div><b>ESC</b> 暂停菜单（保存 / 重置 / 设置）</div>
+      </div>
+      <p class="goal-text">目标：顺着风航行测绘群岛，避开暗礁浅滩，击沉海盗船。注意：顶风会失速！</p>
+      <div class="menu-row">
+        <label>难度</label>
+        <select id="difficulty-select">
+          <option value="3">水手（3 艘海盗船）</option>
+          <option value="5" selected>船长（5 艘海盗船）</option>
+          <option value="6">传奇（6 艘海盗船）</option>
+        </select>
+      </div>
+      <div class="menu-row">
+        <label class="check"><input type="checkbox" id="new-seed-check" /> 使用新种子（否则沿用上次世界）</label>
+      </div>
+      <button id="start-btn">起锚出航</button>
+      <p class="save-hint" id="save-hint"></p>
+    </div>
+  </div>
+
+  <!-- 暂停菜单 -->
+  <div id="pause-screen" class="hidden">
+    <div class="menu-box">
+      <h2>暂停</h2>
+      <button id="resume-btn">继续游戏</button>
+      <button id="save-btn">保存世界</button>
+      <div class="menu-row">
+        <label>视距 <span id="viewdist-label"></span></label>
+        <input type="range" id="viewdist-range" min="2" max="6" step="1" />
+      </div>
+      <div class="menu-row">
+        <label>鼠标灵敏度 <span id="sens-label"></span></label>
+        <input type="range" id="sens-range" min="0.2" max="3" step="0.1" />
+      </div>
+      <div class="menu-row">
+        <label>画质</label>
+        <select id="quality-select">
+          <option value="low">低（无阴影 / 小波 / 少植被）</option>
+          <option value="medium" selected>中（平衡）</option>
+          <option value="high">高（阴影 / 大浪 / 植被茂密）</option>
+        </select>
+      </div>
+      <div class="menu-row reset-row">
+        <button id="reset-same-btn">重置世界（保留种子）</button>
+        <button id="reset-new-btn">重置世界（换新种子）</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 移动端提示 -->
+  <div id="mobile-notice" class="hidden">
+    <div class="menu-box">
+      <h2>建议使用桌面浏览器</h2>
+      <p>本游戏需要键盘与鼠标操作，请在桌面端浏览器中访问以获得完整体验。</p>
+    </div>
+  </div>
+
+  <!-- 沉没提示 -->
+  <div id="sunk-screen" class="hidden">
+    <div class="menu-box">
+      <h2>船体沉没！</h2>
+      <p>救援队将你拖到了安全水域……</p>
+    </div>
+  </div>
+
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>

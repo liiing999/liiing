@@ -1,0 +1,170 @@
+/* 无尽群岛 全局样式：低多边形卡通海洋风格 UI */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  width: 100%; height: 100%; overflow: hidden;
+  background: #0b1d2a;
+  font-family: "Trebuchet MS", "Microsoft YaHei", sans-serif;
+  user-select: none;
+}
+
+#game-canvas { position: fixed; inset: 0; display: block; }
+
+.hidden { display: none !important; }
+
+/* ---------- 通用菜单 ---------- */
+#start-screen, #pause-screen, #mobile-notice {
+  position: fixed; inset: 0; z-index: 50;
+  display: flex; align-items: center; justify-content: center;
+  background: radial-gradient(circle at 50% 35%, rgba(24,64,92,.82), rgba(6,20,32,.94));
+  backdrop-filter: blur(2px);
+}
+
+.menu-box {
+  background: linear-gradient(180deg, rgba(240,236,220,.97), rgba(214,205,180,.97));
+  border: 3px solid #4a3b28;
+  border-radius: 10px;
+  padding: 26px 34px;
+  width: min(640px, 92vw);
+  max-height: 94vh; overflow-y: auto;
+  color: #2c2418;
+  box-shadow: 0 18px 60px rgba(0,0,0,.55), inset 0 0 0 2px rgba(255,255,255,.35);
+  text-align: center;
+}
+
+.menu-box h1 { font-size: 40px; letter-spacing: 10px; color: #1f4d6b; text-shadow: 2px 2px 0 #cfe4ef; }
+.menu-box h2 { font-size: 28px; color: #1f4d6b; margin-bottom: 16px; }
+.subtitle { color: #5d7a8c; margin: 6px 0 18px; letter-spacing: 2px; }
+
+.controls-help {
+  text-align: left; background: rgba(255,255,255,.45);
+  border: 1px solid #b3a98c; border-radius: 8px;
+  padding: 12px 16px; font-size: 14px; line-height: 2;
+}
+.controls-help b { color: #9a4a28; display: inline-block; min-width: 108px; }
+
+.goal-text { margin: 16px 0; font-size: 14px; color: #6b4d2a; }
+.save-hint { margin-top: 10px; font-size: 12px; color: #4d7c52; min-height: 16px; }
+
+.menu-row { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 12px 0; flex-wrap: wrap; }
+.menu-row label { font-size: 14px; color: #3a3120; }
+.menu-row label.check { display: flex; align-items: center; gap: 6px; }
+
+button, select, input[type="range"] { cursor: pointer; }
+
+button {
+  background: linear-gradient(180deg, #3d7ca6, #2a5a7e);
+  color: #f4f0e2; border: 2px solid #1d4058;
+  border-radius: 6px; padding: 10px 22px;
+  font-size: 16px; letter-spacing: 2px;
+  margin: 6px; transition: transform .08s, filter .12s;
+}
+button:hover { filter: brightness(1.15); transform: translateY(-1px); }
+button:active { transform: translateY(1px); }
+
+.reset-row button { background: linear-gradient(180deg, #b0623a, #8a4425); border-color: #62301a; }
+
+select {
+  padding: 6px 10px; border: 2px solid #8b8066; border-radius: 6px;
+  background: #fbf8ee; font-size: 14px;
+}
+
+input[type="range"] { width: 220px; accent-color: #2a5a7e; }
+
+/* ---------- HUD ---------- */
+#hud { position: fixed; inset: 0; z-index: 10; pointer-events: none; }
+
+#compass {
+  position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
+  width: 420px; max-width: 46vw;
+  image-rendering: pixelated;
+}
+
+#sail-panel {
+  position: absolute; top: 92px; left: 50%; transform: translateX(-50%);
+  width: 240px; text-align: center;
+  background: rgba(10,28,42,.45); border-radius: 8px; padding: 6px 10px;
+}
+
+.hud-label { color: #eaf4ff; font-size: 12px; text-shadow: 1px 1px 2px #000; letter-spacing: 1px; }
+.hud-label.small { margin-top: 4px; }
+.hud-value { color: #fff; font-size: 15px; font-weight: bold; text-shadow: 1px 1px 2px #000; }
+
+.bar {
+  position: relative; height: 16px; background: rgba(0,0,0,.5);
+  border: 1px solid rgba(255,255,255,.35); border-radius: 4px; overflow: hidden;
+}
+.bar.thin { height: 8px; margin-top: 2px; }
+.bar > div {
+  height: 100%; width: 0%;
+  background: linear-gradient(90deg, #5fd068, #e8d44d 60%, #e0683e);
+  transition: width .12s linear;
+}
+.bar span {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  font-size: 11px; color: #fff; text-shadow: 1px 1px 1px #000;
+}
+.bar.hp > div { background: linear-gradient(90deg, #3fb65a, #b6d63f 70%, #d6453f); }
+.bar.cannon > div { background: linear-gradient(90deg, #444, #9aa5ad); }
+
+#stats-panel {
+  position: absolute; left: 16px; bottom: 16px; width: 200px;
+  background: rgba(10,28,42,.45); border-radius: 8px; padding: 10px 12px;
+}
+
+#minimap {
+  position: absolute; right: 16px; bottom: 16px;
+  width: 220px; height: 220px;
+  border: 3px solid #d8e8f4; border-radius: 50%;
+  background: rgba(12,40,58,.7);
+  image-rendering: pixelated;
+  box-shadow: 0 4px 18px rgba(0,0,0,.4);
+}
+
+/* 望远镜遮罩 */
+#spyglass-mask {
+  position: absolute; inset: 0; display: none;
+  background: radial-gradient(circle at 50% 50%,
+    rgba(0,0,0,0) 0deg, rgba(0,0,0,0) 22deg,
+    rgba(8,6,3,.97) 25deg, #000 360deg);
+}
+#spyglass-mask.active { display: block; }
+.spyglass-inner {
+  position: absolute; inset: 0;
+  box-shadow: inset 0 0 120px 40px rgba(0,0,0,.85);
+  border-radius: 50%;
+}
+
+/* 浮动提示 */
+#toast-layer { position: absolute; top: 30%; left: 0; right: 0; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.toast {
+  background: rgba(8,24,36,.72); border: 1px solid rgba(255,255,255,.4);
+  color: #ffe9b0; padding: 8px 18px; border-radius: 20px;
+  font-size: 15px; letter-spacing: 1px;
+  animation: toast-fade 3s forwards;
+}
+@keyframes toast-fade {
+  0% { opacity: 0; transform: translateY(8px); }
+  12% { opacity: 1; transform: translateY(0); }
+  80% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* ---------- 信息 / 调试面板 ---------- */
+#info-panel {
+  position: fixed; left: 12px; top: 12px; z-index: 11;
+  color: #cfefff; font-size: 12px; line-height: 1.55;
+  text-shadow: 1px 1px 2px #000; pointer-events: none;
+}
+#info-stats { background: rgba(6,18,28,.5); border-radius: 6px; padding: 6px 10px; min-width: 230px; }
+#ai-panel { margin-top: 8px; background: rgba(6,18,28,.55); border-radius: 6px; padding: 6px 10px; max-width: 320px; }
+.info-title { color: #ffd98a; font-weight: bold; margin-bottom: 2px; }
+.ai-row { white-space: nowrap; }
+
+/* 沉没 */
+#sunk-screen {
+  position: fixed; inset: 0; z-index: 40;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(4,10,16,.55);
+}
+#sunk-screen .menu-box h2 { color: #a33; }
